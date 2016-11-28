@@ -21,5 +21,5 @@ class DiscordBot(discord.Client):
 
     async def send(self, message):
         print('Sending message to discord: {}'.format(message))
-        await self.send_message(self.get_channel('252001047575265280'), message)
+        await self.send_message(self.get_channel('channel_id'), message)
 
