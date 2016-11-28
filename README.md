@@ -1,2 +1,2 @@
 # discord2irc
-discord &lt;--> irc relay bot
+discord &lt;--> irc relay
