@@ -14,12 +14,16 @@ class DiscordBot(discord.Client):
     async def on_message(self, message):
         if message.author == self.user:
             return
-        await self.relay.send_to_irc(message.content)
+
+        if message.content.startswith("!raw"):
+            await self.relay.send_to_irc(message.content.split(" ", 1)[1])
+        else:
+            await self.relay.privmsg_to_irc("<{}> {}".format(message.author, message.content))
 
     async def i2d_send(self, message):
          await self.send(message)
 
     async def send(self, message):
         print('Sending message to discord: {}'.format(message))
-        await self.send_message(self.get_channel('252001047575265280'), message)
+        await self.send_message(self.get_channel('channel_id'), message)
 

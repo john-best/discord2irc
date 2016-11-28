@@ -56,7 +56,6 @@ class IRCProtocol(asyncio.Protocol):
         loop = asyncio.get_event_loop()
         future = asyncio.Future()
         asyncio.ensure_future(self.relay.send_to_discord(message))
-        loop.close()
 
     def login(self):
         self.send("NICK %s" % (self.nick))

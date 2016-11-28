@@ -21,6 +21,11 @@ class relay():
         future = asyncio.Future()
         asyncio.ensure_future(self.ircBot.disc_connected())
 
+    async def privmsg_to_irc(self, message):
+        loop = asyncio.get_event_loop()
+        future = asyncio.Future()
+        asyncio.ensure_future(self.ircBot.d2i_send("PRIVMSG #channel :{}".format(message)))
+
     def start(self):
         loop = asyncio.get_event_loop()
         self.ircBot.start(loop) 
