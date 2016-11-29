@@ -53,8 +53,7 @@ class IRCProtocol(asyncio.Protocol):
 
     def relay_to_discord(self, message):
         loop = asyncio.get_event_loop()
-        future = asyncio.Future()
-        asyncio.ensure_future(self.relay.send_to_discord(message))
+        loop.create_task(self.relay.send_to_discord(message))
 
     def login(self):
         self.send("NICK %s" % (self.nick))
@@ -74,10 +73,10 @@ class IRCBot():
         self.user = nick
         self.real = real
 
-    def d2i_send(self, message):
+    async def d2i_send(self, message):
         self.protocol.send(message)
 
-    def disc_connected(self):
+    async def disc_connected(self):
         self.protocol.discord_connected = True
 
     def start(self, loop):
