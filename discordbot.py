@@ -2,9 +2,10 @@ import asyncio
 import discord
 
 class DiscordBot(discord.Client):
-    def __init__(self, relay):
+    def __init__(self, relay, channel):
         super().__init__()
         self.relay = relay
+        self.channel = channel
         print('initializing discord bot')
 
     async def on_ready(self):
@@ -25,5 +26,5 @@ class DiscordBot(discord.Client):
 
     async def send(self, message):
         print('Sending message to discord: {}'.format(message))
-        await self.send_message(self.get_channel('channel_id'), message)
+        await self.send_message(self.get_channel(str(self.channel)), message)
 

@@ -4,21 +4,20 @@ import re
 
 class IRCProtocol(asyncio.Protocol):
 
-    def __init__(self, relay, loop):
+    def __init__(self, relay, loop, nick, altnick, user, real):
         self.relay = relay
         self.loop = loop
         self.connected = False
         self.discord_connected = False
 
-        self.nick = 'd2i_relay'
-        self.user = 'd2i_relay'
-        self.real = 'discord 2 irc relay'
+        self.nick = nick
+        self.user = user
+        self.real = real
         
 
     def connection_made(self, transport):
         print('IRC: Connection made!')
         self.transport = transport
-        self.queue = asyncio.Queue()
 
     def data_received(self, data):
         data = data.decode()
@@ -69,6 +68,12 @@ class IRCBot():
         self.port = port
         self.protocol = None
 
+    def init(self, nick, altnick, real):
+        self.nick = nick
+        self.altnick = altnick
+        self.user = nick
+        self.real = real
+
     def d2i_send(self, message):
         self.protocol.send(message)
 
@@ -76,7 +81,7 @@ class IRCBot():
         self.protocol.discord_connected = True
 
     def start(self, loop):
-        ircProto = IRCProtocol(self.relay, loop)
+        ircProto = IRCProtocol(self.relay, loop, self.nick, self.altnick, self.user, self.real)
         connection = loop.create_connection(lambda: ircProto, self.server, self.port)
         self.protocol = ircProto
         loop.run_until_complete(connection)
