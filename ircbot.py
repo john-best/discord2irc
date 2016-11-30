@@ -20,6 +20,7 @@ class IRCProtocol(asyncio.Protocol):
         self.transport = transport
         self.login()
         self.irc_connected()
+        self.connected = True
 
     def data_received(self, data):
         data = data.decode()
