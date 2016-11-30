@@ -6,6 +6,7 @@ class DiscordBot(discord.Client):
         super().__init__()
         self.relay = relay
         self.channel = channel
+        self.irc_connected = False
         print('initializing discord bot')
 
     async def on_ready(self):
@@ -13,16 +14,20 @@ class DiscordBot(discord.Client):
         await self.relay.set_discord_connected()
 
     async def on_message(self, message):
-        if message.author == self.user:
-            return
+        if self.irc_connected:
+            if message.author == self.user:
+                return
 
-        if message.content.startswith("!raw"):
-            await self.relay.send_to_irc(message.content.split(" ", 1)[1])
-        else:
-            await self.relay.privmsg_to_irc("<{}> {}".format(message.author, message.content))
+            if message.content.startswith("!raw"):
+                await self.relay.send_to_irc(message.content.split(" ", 1)[1])
+            else:
+                await self.relay.privmsg_to_irc("<{}> {}".format(message.author, message.content))
 
     async def i2d_send(self, message):
          await self.send(message)
+
+    async def _irc_connected(self):
+        self.irc_connected = True
 
     async def send(self, message):
         print('Sending message to discord: {}'.format(message))

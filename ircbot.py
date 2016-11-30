@@ -32,6 +32,7 @@ class IRCProtocol(asyncio.Protocol):
         # commence login operations
         if self.connected is False:
             self.login()
+            self.irc_connected()
             self.connected = True
 
         #TODO: actually handle login response
@@ -55,6 +56,10 @@ class IRCProtocol(asyncio.Protocol):
         loop = asyncio.get_event_loop()
         loop.create_task(self.relay.send_to_discord(message))
 
+    def irc_connected(self):
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.relay.set_irc_connected())
+
     def login(self):
         self.send("NICK %s" % (self.nick))
         self.send("USER %s 0 * :%s" % (self.user, self.real))
@@ -76,7 +81,7 @@ class IRCBot():
     async def d2i_send(self, message):
         self.protocol.send(message)
 
-    async def disc_connected(self):
+    async def discord_connected(self):
         self.protocol.discord_connected = True
 
     def start(self, loop):
