@@ -79,7 +79,6 @@ class IRCProtocol(asyncio.Protocol):
                 # let's not support private messages for now
                 return
 
-
             # TODO: there must be a fancier way of handling this
 
             if command == 'notice':
@@ -118,6 +117,8 @@ class IRCProtocol(asyncio.Protocol):
 
         # end of motd or no motd; join channels
         if rpl == '376' or rpl == '422':
+            if self.discord_connected:
+                self.relay_to_discord("Joining channel: {}".format(self.channel))
             self.join(self.channel)
 
            
@@ -125,8 +126,10 @@ class IRCProtocol(asyncio.Protocol):
         self.send("JOIN {}".format(target))
     
     def send(self, message):
-        print("IRC: Sending: %s" % (message))
         self.transport.write("{}\r\n".format(message).encode())
+
+    def privmsg(self, target, message):
+        self.send("PRIVMSG {} :{}".format(target, message))
 
     def relay_to_discord(self, message):
         loop = asyncio.get_event_loop()
@@ -137,8 +140,8 @@ class IRCProtocol(asyncio.Protocol):
         loop.create_task(self.relay.set_irc_connected())
 
     def login(self):
-        self.send("NICK %s" % (self.nick))
-        self.send("USER %s 0 * :%s" % (self.user, self.real))
+        self.send("NICK {}".format(self.nick))
+        self.send("USER {} 0 * :{}".format(self.user, self.real))
 
 class IRCBot():
     def __init__(self, relay, server, port):
@@ -155,6 +158,9 @@ class IRCBot():
         self.real = real
         self.channel = channel
 
+    async def irc_privmsg(self, target, message):
+        self.protocol.privmsg(target, message)
+    
     async def d2i_send(self, message):
         self.protocol.send(message)
 
