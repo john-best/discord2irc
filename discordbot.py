@@ -14,7 +14,7 @@ class DiscordBot(discord.Client):
         await self.relay.set_discord_connected()
 
     async def on_message(self, message):
-        if self.irc_connected:
+        if self.irc_connected and message.channel == self.get_channel(self.channel):
             if message.author == self.user:
                 return
 
@@ -31,5 +31,5 @@ class DiscordBot(discord.Client):
 
     async def send(self, message):
         print('Sending message to discord: {}'.format(message))
-        await self.send_message(self.get_channel(str(self.channel)), message)
+        await self.send_message(self.get_channel(self.channel), message)
 
