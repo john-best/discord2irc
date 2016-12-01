@@ -9,11 +9,17 @@ class relay():
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read('settings.conf');
-        self.ircBot = ircbot.IRCBot(self, self.config['settings']['network'], self.config['settings']['port'])
-        self.ircBot.init(self.config['settings']['nick'], self.config['settings']['altnick'], self.config['settings']['realname']) 
-        self.discordBot = discordbot.DiscordBot(self, self.config['discord']['channel'])
+
         self.ircchannel = self.config['settings']['channel']
-        self.distoken = self.config['discord']['token']
+        self.distoken = self.config['discord']['token'] 
+
+        self.discordBot = discordbot.DiscordBot(self, self.config['discord']['channel'])
+        
+        self.ircBot = ircbot.IRCBot(self, self.config['settings']['network'], self.config['settings']['port'])
+        self.ircBot.init(self.config['settings']['nick'], \
+                self.config['settings']['altnick'], \
+                self.config['settings']['realname'], \
+                self.ircchannel) 
 
     async def send_to_discord(self, message):
         await self.discordBot.i2d_send(message)
