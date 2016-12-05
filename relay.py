@@ -28,13 +28,13 @@ class relay():
         loop = asyncio.get_event_loop()
         loop.create_task(self.ircBot.d2i_send(message))
 
-    async def set_irc_connected(self):
+    async def set_irc_connection_status(self, status):
         loop = asyncio.get_event_loop()
-        loop.create_task(self.discordBot._irc_connected())
+        loop.create_task(self.discordBot.set_irc_connection_status(status))
 
-    async def set_discord_connected(self):
+    async def set_discord_connection_status(self, status):
         loop = asyncio.get_event_loop()
-        loop.create_task(self.ircBot.discord_connected())
+        loop.create_task(self.ircBot.set_discord_connection_status(status))
 
     async def privmsg_to_irc(self, message):
         loop = asyncio.get_event_loop()

@@ -9,9 +9,8 @@ class IRCProtocol(asyncio.Protocol):
     def __init__(self, relay, loop, nick, altnick, user, real, channel):
         self.relay = relay
         self.loop = loop
-        self.connected = False
+        self.irc_connected = False
         self.discord_connected = False
-
         self.nick = nick
         self.user = user
         self.real = real
@@ -21,16 +20,19 @@ class IRCProtocol(asyncio.Protocol):
         print('IRC: Connection made!')
         self.transport = transport
         self.login()
-        self.irc_connected()
-        self.connected = True
+        self.irc_connected = True
+        self.set_connection_status(True)
 
     def data_received(self, data):
         data = data.decode()
         self.handle_data(data)
 
     def connection_lost(self, exc):
+        self.irc_connected = False
+        self.set_connection_status(False)
         print('IRC: Connection to the server has been lost.')
-        self.relay_to_discord("IRC: Connection to the server has been lost.")
+        if self.discord_connected:
+            self.relay_to_discord("IRC: Connection to the server has been lost.")
 
     def handle_data(self, data):
 
@@ -135,9 +137,16 @@ class IRCProtocol(asyncio.Protocol):
         loop = asyncio.get_event_loop()
         loop.create_task(self.relay.send_to_discord(message))
 
-    def irc_connected(self):
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.relay.set_irc_connected())
+    def set_connection_status(self, status):
+            loop = asyncio.get_event_loop()
+            loop.create_task(self.relay.set_irc_connection_status(status))
+
+    def set_discord_connection_status(self, status):
+        if self.irc_connected and status:
+            self.privmsg(self.channel, "Connected to Discord!")
+        elif self.irc_connected and not status:
+            self.privmsg(self.channel, "Disconnected from Discord")
+        self.discord_connected = status
 
     def login(self):
         self.send("NICK {}".format(self.nick))
@@ -164,8 +173,8 @@ class IRCBot():
     async def d2i_send(self, message):
         self.protocol.send(message)
 
-    async def discord_connected(self):
-        self.protocol.discord_connected = True
+    async def set_discord_connection_status(self, status):
+        self.protocol.set_discord_connection_status(status)
 
     def start(self, loop):
         ircProto = IRCProtocol(self.relay, loop, self.nick, self.altnick, self.user, self.real, self.channel)

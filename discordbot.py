@@ -11,7 +11,7 @@ class DiscordBot(discord.Client):
 
     async def on_ready(self):
         print('Logged in as %s : %s' % (self.user.name, self.user.id))
-        await self.relay.set_discord_connected()
+        await self.relay.set_discord_connection_status(True)
 
     async def on_message(self, message):
         if self.irc_connected and message.channel == self.get_channel(self.channel):
@@ -26,8 +26,8 @@ class DiscordBot(discord.Client):
     async def i2d_send(self, message):
          await self.send(message)
 
-    async def _irc_connected(self):
-        self.irc_connected = True
+    async def set_irc_connection_status(self, status):
+        self.irc_connected = status
 
     async def send(self, message):
         print('Sending message to discord: {}'.format(message))
