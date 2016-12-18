@@ -1,6 +1,6 @@
 import asyncio
-import functools
 import re
+import logging
 
 MESSAGE_REGEX = re.compile(":(?P<nick>[^ ]*)!(?P<user>[^@]*)(?P<address>[^ ]*)\s(?P<command>[^ ]*)\s(?P<target>[^ ]*)\s:(?P<text>.*)")
 
@@ -17,7 +17,7 @@ class IRCProtocol(asyncio.Protocol):
         self.channel = channel
 
     def connection_made(self, transport):
-        print('IRC: Connection made!')
+        logging.info('IRC: Connection made!')
         self.transport = transport
         self.login()
         self.irc_connected = True
@@ -30,7 +30,7 @@ class IRCProtocol(asyncio.Protocol):
     def connection_lost(self, exc):
         self.irc_connected = False
         self.set_connection_status(False)
-        print('IRC: Connection to the server has been lost.')
+        logging.info('IRC: Connection to the server has been lost.')
         if self.discord_connected:
             self.relay_to_discord("IRC: Connection to the server has been lost.")
 
@@ -65,7 +65,7 @@ class IRCProtocol(asyncio.Protocol):
 
         # TODO: logging module soon(tm)
         if not match:
-            print("Unhandled message sent {}".format(message))
+            logging.debug("Unhandled message sent {}".format(message))
 
         else:
             nick = match.group('nick')
@@ -102,18 +102,18 @@ class IRCProtocol(asyncio.Protocol):
         # TODO: need a better way to handle server messages -- HIGH PRIORITY
 
         if message.startswith("PING"):
-            print("PING recv: {}".format(message))
+            logging.debug("PING recv: {}".format(message))
             self.send("PONG :" + message.split(":",1)[1])
         
         else:
-            print("IRC: Received unknown message from server: {}".format(message))
+            logging.debug("IRC: Received unknown message from server: {}".format(message))
 
     def handle_server_rpl(self, rpl):
 
         # TODO: need better way of handling rpl codes
         
         if rpl == '001':
-            print("RPL_WELCOME Received")
+            logging.debug("RPL_WELCOME Received")
             if self.discord_connected:
                 self.relay_to_discord("Connected to IRC!")
 
@@ -154,7 +154,7 @@ class IRCProtocol(asyncio.Protocol):
 
 class IRCBot():
     def __init__(self, relay, server, port):
-        print('IRC Bot initializing')
+        logging.info('IRC Bot initializing')
         self.relay = relay
         self.server = server
         self.port = port

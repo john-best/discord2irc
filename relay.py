@@ -2,23 +2,36 @@ import discordbot
 import ircbot
 import asyncio
 import configparser
+import logging
 
 
 class relay():
 
     def __init__(self):
-        self.config = configparser.ConfigParser()
-        self.config.read('settings.conf');
+        
+        self.config = configparser.ConfigParser() 
+        self.config.read('settings.conf')
 
-        self.ircchannel = self.config['settings']['channel']
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
+        self.ch = logging.StreamHandler()
+        self.ch.setLevel(logging.DEBUG)
+
+        self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.ch.setFormatter(self.formatter)
+        self.logger.addHandler(self.ch)
+
+
+        self.ircchannel = self.config['irc']['channel']        
         self.distoken = self.config['discord']['token'] 
-
         self.discordBot = discordbot.DiscordBot(self, self.config['discord']['channel'])
         
-        self.ircBot = ircbot.IRCBot(self, self.config['settings']['network'], self.config['settings']['port'])
-        self.ircBot.init(self.config['settings']['nick'], \
-                self.config['settings']['altnick'], \
-                self.config['settings']['realname'], \
+        self.ircBot = ircbot.IRCBot(self, self.config['irc']['network'], \
+                self.config['irc']['port'])
+
+        self.ircBot.init(self.config['irc']['nick'], \
+                self.config['irc']['altnick'], \
+                self.config['irc']['realname'], \
                 self.ircchannel) 
 
     async def send_to_discord(self, message):
@@ -46,5 +59,7 @@ class relay():
         self.discordBot.run(self.distoken)
         loop.run_forever()
 
-relayBot = relay()
-relayBot.start()
+
+if __name__ == '__main__':
+    relayBot = relay()
+    relayBot.start()
