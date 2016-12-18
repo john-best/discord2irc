@@ -11,6 +11,8 @@ Modify settings.conf to your liking. An example of a successfully edited config 
 
 ```
 [settings]
+
+[irc]
 network = irc.gamesurge.net
 port = 6667
 
