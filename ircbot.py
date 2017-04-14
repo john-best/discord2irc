@@ -5,7 +5,7 @@ MESSAGE_REGEX = re.compile(":(?P<nick>[^ ]*)!(?P<user>[^@]*)(?P<address>[^ ]*)\s
 
 class IRCProtocol(asyncio.Protocol):
 
-    def __init__(self, relay, loop, nick, altnick, user, real, channel):
+    def __init__(self, relay, loop, nick, altnick, user, real, channel, perform):
         self.relay = relay
         self.loop = loop
         self.irc_connected = False
@@ -14,6 +14,7 @@ class IRCProtocol(asyncio.Protocol):
         self.user = user
         self.real = real
         self.channel = channel
+        self.perform = perform
 
     def connection_made(self, transport):
         print('IRC: Connection made!')
@@ -32,6 +33,10 @@ class IRCProtocol(asyncio.Protocol):
         print('IRC: Connection to the server has been lost.')
         if self.discord_connected:
             self.relay_to_discord("IRC: Connection to the server has been lost.")
+
+    def run_perform(self):
+        for command in self.perform:
+            self.send(command)
 
     def handle_data(self, data):
 
@@ -63,7 +68,10 @@ class IRCProtocol(asyncio.Protocol):
         match = re.match(MESSAGE_REGEX, message)
 
         if not match:
-            print("Unhandled message sent {}".format(message))
+            #print("Unhandled message sent {}".format(message))
+
+            # these messages do not matter for a relay probably
+            pass
 
         else:
             nick = match.group('nick')
@@ -103,7 +111,10 @@ class IRCProtocol(asyncio.Protocol):
             self.send("PONG :" + message.split(":",1)[1])
         
         else:
-            print("IRC: Received unknown message from server: {}".format(message))
+            #print("IRC: Received unknown message from server: {}".format(message))
+            
+            # these messages don't really matter for a relay
+            pass
 
     def handle_server_rpl(self, rpl):
 
@@ -111,6 +122,7 @@ class IRCProtocol(asyncio.Protocol):
         
         if rpl == '001':
             print("RPL_WELCOME Received")
+            self.run_perform()
             if self.discord_connected:
                 self.relay_to_discord("Connected to IRC!")
 
@@ -157,12 +169,13 @@ class IRCBot():
         self.port = port
         self.protocol = None
 
-    def init(self, nick, altnick, real, channel):
+    def init(self, nick, altnick, real, channel, perform):
         self.nick = nick
         self.altnick = altnick
         self.user = nick
         self.real = real
         self.channel = channel
+        self.perform = perform
 
     async def irc_privmsg(self, target, message):
         self.protocol.privmsg(target, message)
@@ -174,7 +187,7 @@ class IRCBot():
         self.protocol.set_discord_connection_status(status)
 
     def start(self, loop):
-        ircProto = IRCProtocol(self.relay, loop, self.nick, self.altnick, self.user, self.real, self.channel)
+        ircProto = IRCProtocol(self.relay, loop, self.nick, self.altnick, self.user, self.real, self.channel, self.perform)
         connection = loop.create_connection(lambda: ircProto, self.server, self.port)
         self.protocol = ircProto
         loop.run_until_complete(connection)
