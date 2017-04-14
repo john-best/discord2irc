@@ -25,6 +25,11 @@ channel = #tfjumpers
 [discord]
 channel = 111111111111
 token = q1w2E3r4XyZ10whatever
+
+[irc_perform]
+run1 = command1
+run2 = command2 
+# note the variable name doesn't matter just make sure it's not a duplicate
 ```
 
 ## Running
