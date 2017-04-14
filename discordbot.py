@@ -18,10 +18,13 @@ class DiscordBot(discord.Client):
             if message.author == self.user:
                 return
 
-            if message.content.startswith("!raw"):
+
+            # raw was made for debugging purposes only. now removed by default
+            '''if message.content.startswith("!raw"):
                 await self.relay.send_to_irc(message.content.split(" ", 1)[1])
-            else:
-                await self.relay.privmsg_to_irc("<{}> {}".format(message.author, message.content))
+            else:'''
+
+            await self.relay.privmsg_to_irc("<{}> {}".format(message.author, message.content))
 
     async def i2d_send(self, message):
          await self.send(message)
