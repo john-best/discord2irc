@@ -2,7 +2,6 @@ import discordbot
 import ircbot
 import asyncio
 import configparser
-import logging
 
 
 class relay():
@@ -11,16 +10,6 @@ class relay():
         
         self.config = configparser.ConfigParser() 
         self.config.read('settings.conf')
-
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.DEBUG)
-        self.ch = logging.StreamHandler()
-        self.ch.setLevel(logging.DEBUG)
-
-        self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        self.ch.setFormatter(self.formatter)
-        self.logger.addHandler(self.ch)
-
 
         self.ircchannel = self.config['irc']['channel']        
         self.distoken = self.config['discord']['token'] 

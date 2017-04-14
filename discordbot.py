@@ -1,6 +1,5 @@
 import asyncio
 import discord
-import logging
 
 class DiscordBot(discord.Client):
     def __init__(self, relay, channel):
@@ -8,10 +7,10 @@ class DiscordBot(discord.Client):
         self.relay = relay
         self.channel = channel
         self.irc_connected = False
-        logging.info('initializing discord bot')
+        print('initializing discord connection')
 
     async def on_ready(self):
-        logging.info('Logged in as %s : %s' % (self.user.name, self.user.id))
+        print('Logged in as %s : %s' % (self.user.name, self.user.id))
         await self.relay.set_discord_connection_status(True)
 
     async def on_message(self, message):
@@ -31,6 +30,5 @@ class DiscordBot(discord.Client):
         self.irc_connected = status
 
     async def send(self, message):
-        logging.debug('Sending message to discord: {}'.format(message))
         await self.send_message(self.get_channel(self.channel), message)
 
