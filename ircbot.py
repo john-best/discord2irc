@@ -93,7 +93,11 @@ class IRCProtocol(asyncio.Protocol):
                 message_ = "-{}- {}".format(nick, text)
 
             elif command == 'privmsg':
-                message_ = "<{}> {}".format(nick, text)
+                if 'action' in text.split(" ")[0].lower():
+                    text = text.split(" ")[1:]
+                    message_ = "* {} {}".format(nick, " ".join(text))
+                else:
+                    message_ = "<{}> {}".format(nick, text)
 
             if self.discord_connected and message_ is not None:
                 self.relay_to_discord(message_)
