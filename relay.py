@@ -14,8 +14,10 @@ class relay():
         self.ircchannel = self.config['irc']['channel']        
         self.distoken = self.config['discord']['token'] 
         self.discordBot = discordbot.DiscordBot(self, self.config['discord']['channel'])
-
         self.ircperform = []
+
+        self.irc_connected = False
+        self.discord_connected = False
 
         for name, command in self.config.items('irc_perform'):
             self.ircperform.append(command)
@@ -36,12 +38,10 @@ class relay():
         loop.create_task(self.ircBot.d2i_send(message))
 
     async def set_irc_connection_status(self, status):
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.discordBot.set_irc_connection_status(status))
+        self.irc_connected = status
 
     async def set_discord_connection_status(self, status):
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.ircBot.set_discord_connection_status(status))
+        self.discord_connected = status
 
     async def privmsg_to_irc(self, message):
         loop = asyncio.get_event_loop()

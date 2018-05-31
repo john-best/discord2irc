@@ -8,8 +8,6 @@ class IRCProtocol(asyncio.Protocol):
     def __init__(self, relay, loop, nick, altnick, user, real, channel, perform):
         self.relay = relay
         self.loop = loop
-        self.irc_connected = False
-        self.discord_connected = False
         self.nick = nick
         self.user = user
         self.real = real
@@ -20,7 +18,6 @@ class IRCProtocol(asyncio.Protocol):
         print('IRC: Connection made!')
         self.transport = transport
         self.login()
-        self.irc_connected = True
         self.set_connection_status(True)
 
     def data_received(self, data):
@@ -31,7 +28,7 @@ class IRCProtocol(asyncio.Protocol):
         self.irc_connected = False
         self.set_connection_status(False)
         print('IRC: Connection to the server has been lost.')
-        if self.discord_connected:
+        if self.relay.discord_connected:
             self.relay_to_discord("IRC: Connection to the server has been lost.")
 
     def run_perform(self):
@@ -45,6 +42,8 @@ class IRCProtocol(asyncio.Protocol):
         # might have some major lag i'm not sure if this is the best solution
 
         for message in messages:
+            
+            print(message)
 
             if message == '':
                 break
@@ -99,7 +98,7 @@ class IRCProtocol(asyncio.Protocol):
                 else:
                     message_ = "<{}> {}".format(nick, text)
 
-            if self.discord_connected and message_ is not None:
+            if self.relay.discord_connected and message_ is not None:
                 self.relay_to_discord(message_)
 
             else:
@@ -127,12 +126,12 @@ class IRCProtocol(asyncio.Protocol):
         if rpl == '001':
             print("RPL_WELCOME Received")
             self.run_perform()
-            if self.discord_connected:
+            if self.relay.discord_connected:
                 self.relay_to_discord("Connected to IRC!")
 
         # end of motd or no motd; join channels
         if rpl == '376' or rpl == '422':
-            if self.discord_connected:
+            if self.relay.discord_connected:
                 self.relay_to_discord("Joining channel: {}".format(self.channel))
             self.join(self.channel)
 
@@ -151,15 +150,8 @@ class IRCProtocol(asyncio.Protocol):
         loop.create_task(self.relay.send_to_discord(message))
 
     def set_connection_status(self, status):
-            loop = asyncio.get_event_loop()
-            loop.create_task(self.relay.set_irc_connection_status(status))
-
-    def set_discord_connection_status(self, status):
-        if self.irc_connected and status:
-            self.privmsg(self.channel, "Connected to Discord!")
-        elif self.irc_connected and not status:
-            self.privmsg(self.channel, "Disconnected from Discord")
-        self.discord_connected = status
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.relay.set_irc_connection_status(status))
 
     def login(self):
         self.send("NICK {}".format(self.nick))
@@ -186,9 +178,6 @@ class IRCBot():
     
     async def d2i_send(self, message):
         self.protocol.send(message)
-
-    async def set_discord_connection_status(self, status):
-        self.protocol.set_discord_connection_status(status)
 
     def start(self, loop):
         ircProto = IRCProtocol(self.relay, loop, self.nick, self.altnick, self.user, self.real, self.channel, self.perform)
