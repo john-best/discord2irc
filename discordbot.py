@@ -56,6 +56,12 @@ class DiscordBot(discord.Client):
             if message.content != '':
                 await self.relay.privmsg_to_irc("<{}> {}".format(message.author, message.content))
 
+    async def on_message_edit(self, before, after):
+        if after.author == self.user:
+            return
+        
+        await self.relay.privmsg_to_irc("<{}> {} (edit)".format(after.author, after.content))
+
     async def i2d_send(self, message):
         await self.send(message)
 
