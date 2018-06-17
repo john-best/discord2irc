@@ -29,7 +29,7 @@ class IRCProtocol(asyncio.Protocol):
         self.set_connection_status(False)
         print('IRC: Connection to the server has been lost.')
         if self.relay.discord_connected:
-            self.relay_to_discord("IRC: Connection to the server has been lost.")
+            self.send_embed_to_discord("IRC: Connection to the server has been lost.", None, 0xFF0000)
 
     def run_perform(self):
         for command in self.perform:
@@ -127,12 +127,12 @@ class IRCProtocol(asyncio.Protocol):
             print("RPL_WELCOME Received")
             self.run_perform()
             if self.relay.discord_connected:
-                self.relay_to_discord("Connected to IRC!")
+                self.send_embed_to_discord("IRC: Connected!", "RPL_WELCOME (001) received", 0x00FF00)
 
         # end of motd or no motd; join channels
         if rpl == '376' or rpl == '422':
             if self.relay.discord_connected:
-                self.relay_to_discord("Joining channel: {}".format(self.channel))
+                self.send_embed_to_discord("IRC: Joining Channel", self.channel, 0xFFFF00)
             self.join(self.channel)
 
            
@@ -148,6 +148,10 @@ class IRCProtocol(asyncio.Protocol):
     def relay_to_discord(self, message):
         loop = asyncio.get_event_loop()
         loop.create_task(self.relay.send_to_discord(message))
+
+    def send_embed_to_discord(self, title, description, color):
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.relay.send_embed_to_discord(title, description, color))
 
     def set_connection_status(self, status):
         loop = asyncio.get_event_loop()

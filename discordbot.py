@@ -62,3 +62,7 @@ class DiscordBot(discord.Client):
     async def send(self, message):
         await self.send_message(self.get_channel(self.channel), message)
 
+    async def send_embed(self, title, description, color):
+        embed = discord.Embed(title=title, description=description, color=color)
+        await self.send_message(self.get_channel(self.channel), embed=embed)
+

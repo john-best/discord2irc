@@ -47,6 +47,9 @@ class relay():
         loop = asyncio.get_event_loop()
         loop.create_task(self.ircBot.irc_privmsg(self.ircchannel, message))
 
+    async def send_embed_to_discord(self, title, description, color):
+        await self.discordBot.send_embed(title, description, color)
+
     def start(self):
         loop = asyncio.get_event_loop()
         self.ircBot.start(loop) 
